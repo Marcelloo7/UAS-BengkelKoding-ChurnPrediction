@@ -60,13 +60,15 @@ def main():
     # --------------------------------------------------
     print_header("RINGKASAN AKHIR")
     import pandas as pd
+    hasil_direct.index = [f"{i} (Direct)" for i in hasil_direct.index]
     df_semua = pd.concat([hasil_direct, hasil_prep, hasil_tuning])
     print(df_semua.round(4).to_string())
 
     best_idx = df_semua['F1 Score'].idxmax()
+    best_row = df_semua.loc[[best_idx]].iloc[0]
     print(f"\n  Model Terbaik   : {best_idx}")
-    print(f"  F1 Score        : {df_semua.loc[best_idx, 'F1 Score']:.4f}")
-    print(f"  Akurasi         : {df_semua.loc[best_idx, 'Akurasi']:.4f}")
+    print(f"  F1 Score        : {best_row['F1 Score']:.4f}")
+    print(f"  Akurasi         : {best_row['Akurasi']:.4f}")
     print(f"\n  Model disimpan di: output/models/best_model.pkl")
     print(f"  Plot  disimpan di: output/plots/")
     print("\n[SELESAI] Semua tahap berhasil dijalankan!")
