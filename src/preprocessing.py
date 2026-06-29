@@ -22,7 +22,7 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
 from imblearn.over_sampling import SMOTE
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import (DATA_PATH, PLOTS_DIR, TARGET_COL, COLS_DROP,
+from config import (DATA_PATH, PLOTS_DIR, MODELS_DIR, TARGET_COL, COLS_DROP,
                     COLS_KATEGORIKAL, COLS_NUMERIK, COLS_SCALE,
                     TEST_SIZE, RANDOM_STATE)
 
@@ -44,6 +44,12 @@ def hapus_fitur_tidak_relevan(df):
 
 def tangani_missing_value(df):
     print("\n[Prep] Menangani Missing Value...")
+
+    # Tangani inconsistent data: age negatif tidak masuk akal -> treat sebagai missing
+    n_age_negatif = (df['age'] < 0).sum()
+    if n_age_negatif > 0:
+        df.loc[df['age'] < 0, 'age'] = np.nan
+        print(f"  age negatif ditemukan: {n_age_negatif} baris -> diubah jadi NaN")
 
     # age -> imputasi median (distribusi skewed)
     imp_median = SimpleImputer(strategy='median')
@@ -188,6 +194,7 @@ def evaluasi_model(nama, y_test, y_pred, warna='Blues'):
 
 def run_preprocessing():
     os.makedirs(PLOTS_DIR, exist_ok=True)
+    os.makedirs(MODELS_DIR, exist_ok=True)
 
     print("\n" + "="*60)
     print("  MODELING DENGAN PREPROCESSING")
@@ -237,6 +244,12 @@ def run_preprocessing():
     print("="*60)
     print(df_hasil.round(4).to_string())
     print("\n[Preprocessing] Selesai!")
+
+    # Simpan scaler dan label encoder
+    import joblib
+    joblib.dump(scaler,  os.path.join(MODELS_DIR, 'scaler.pkl'))
+    joblib.dump(le_dict, os.path.join(MODELS_DIR, 'label_encoders.pkl'))
+    print("[Model] Scaler dan Label Encoder disimpan!")
 
     return df_hasil, X_train_sm, X_test, y_train_sm, y_test, rf, scaler, le_dict
 
